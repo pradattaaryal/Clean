@@ -3,20 +3,18 @@ using practices.Model;
 using practices.Repositories;
 using MediatR;
 using practices.Helpers;
-
+using Application.Mapper;
 namespace practices.CQRS.Commands
 {
     public class CreateProductHandler : IRequestHandler<CreateProductCommand, bool>
     {
         private readonly IProductRepository _productRepository;
-        private readonly ImageHelper _imageHelper;
-
-        public CreateProductHandler(IProductRepository productRepository, ImageHelper imageHelper)
+        private readonly IMapper _mapper;
+        public CreateProductHandler(IProductRepository productRepository, IMapper mapper)
         {
             _productRepository = productRepository;
-            _imageHelper = imageHelper;
+            _mapper = mapper;
         }
-
         public async Task<bool> Handle(CreateProductCommand command, CancellationToken cancellationToken)
         { var fileName = Guid.NewGuid() +Path.GetExtension(command.Image.FileName);
             var filePath = Path.Combine(Directory.GetCurrentDirectory(), fileName);
@@ -24,12 +22,7 @@ namespace practices.CQRS.Commands
             {
                 await command.Image.CopyToAsync(stream);
             }
-            var product = new Product
-            {
-                Name = command.Name,
-                Price = command.Price,
-                Image = filePath
-            };
+            var product = _mapper.MapToEntity(command, filePath);
             await _productRepository.AddProductAsync(product);
             return true;
         }
@@ -39,23 +32,19 @@ namespace practices.CQRS.Commands
     {
         private readonly IProductRepository _productRepository;
         private readonly ImageHelper _imageHelper;
+        private readonly IMapper _mapper;
 
-        public UpdateProductHandler(IProductRepository productRepository, ImageHelper imageHelper)
+        public UpdateProductHandler(IProductRepository productRepository, ImageHelper imageHelper, IMapper mapper)
         {
             _productRepository = productRepository;
             _imageHelper = imageHelper;
+            _mapper = mapper;
         }
 
         public async Task<bool> Handle(UpdateProductCommand command, CancellationToken cancellationToken)
         {
             var imagePath = command.Image != null ? await _imageHelper.SaveImageAsync(command.Image) : null;
-            var product = new Product
-            {
-                Id = command.Id,
-                Name = command.Name,
-                Price = command.Price,
-                Image = imagePath
-            };
+            var product = _mapper.MapToEntity(command, imagePath);
             await _productRepository.UpdateProductAsync(product);
             return true;
         }

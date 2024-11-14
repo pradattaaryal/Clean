@@ -13,6 +13,7 @@ using practices.Repositories;
 using System;
 using System.Reflection;
 using System.Text;
+using Application.Mapper;
 
 using MediatR; ;
 var builder = WebApplication.CreateBuilder(args);
@@ -20,6 +21,7 @@ builder.Services.AddDbContext<YourNamespace.ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IMapper, Mapper>();
 //builder.Services.AddScoped<LoginUserDto>();
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly())); // Register MediatR
  
