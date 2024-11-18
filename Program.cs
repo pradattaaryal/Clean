@@ -14,14 +14,17 @@ using System;
 using System.Reflection;
 using System.Text;
 using Application.Mapper;
-
+using practices.Service;
 using MediatR; ;
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<YourNamespace.ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-builder.Services.AddScoped<IProductRepository, ProductRepository>();
-builder.Services.AddScoped<IUserRepository, UserRepository>();
-builder.Services.AddScoped<IMapper, Mapper>();
+builder.Services.AddScoped<IProductRepository, ProductRepository>();  // Use interfaces
+builder.Services.AddScoped<IUserRepository, UserRepository>();  // Use interfaces
+builder.Services.AddScoped<IProductService, ProductService>();  // Service depends on interfaces
+builder.Services.AddScoped<IUserService, UserService>();  // Service depends on interfaces
+builder.Services.AddScoped<IMapper, Mapper>();  // Assuming the Mapper is an interface implementation
+
 //builder.Services.AddScoped<LoginUserDto>();
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly())); // Register MediatR
  

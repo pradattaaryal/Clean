@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using practices.Model;
 using practices.Repositories;
 using MediatR;
+using practices.Service;
 
 namespace practices.CQRS.Queries
 {
@@ -11,31 +12,31 @@ namespace practices.CQRS.Queries
 
     public class GetAllProductsHandler : IRequestHandler<GetAllProductsQuery, IEnumerable<Product>>
     {
-        private readonly IProductRepository _productRepository;
+        private readonly IProductService _ProductService;
 
-        public GetAllProductsHandler(IProductRepository productRepository)
+        public GetAllProductsHandler(IProductService IProductService)
         {
-            _productRepository = productRepository;
+            _ProductService = IProductService;
         }
 
         public async Task<IEnumerable<Product>> Handle(GetAllProductsQuery request, CancellationToken cancellationToken)
         {
-            return await _productRepository.GetAllProductsAsync();
+            return await _ProductService.GetAllProductsAsync();
         }
     }
 
     public class GetProductByIdHandler : IRequestHandler<GetProductByIdQuery, Product>
     {
-        private readonly IProductRepository _productRepository;
+        private readonly IProductService _ProductService;
 
-        public GetProductByIdHandler(IProductRepository productRepository)
+        public GetProductByIdHandler(IProductService IProductService)
         {
-            _productRepository = productRepository;
+            _ProductService = IProductService;
         }
 
         public async Task<Product> Handle(GetProductByIdQuery query, CancellationToken cancellationToken)
         {
-            return await _productRepository.GetProductByIdAsync(query.Id);
+            return await _ProductService.GetProductByIdAsync(query.Id);
         }
     }
 

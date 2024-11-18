@@ -4,15 +4,16 @@ using practices.Repositories;
 using MediatR;
 using practices.Helpers;
 using Application.Mapper;
+using practices.Service;
 namespace practices.CQRS.Commands
 {
     public class CreateProductHandler : IRequestHandler<CreateProductCommand, bool>
     {
-        private readonly IProductRepository _productRepository;
+        private readonly IProductService _ProductService;
         private readonly IMapper _mapper;
-        public CreateProductHandler(IProductRepository productRepository, IMapper mapper)
+        public CreateProductHandler(IProductService IProductService, IMapper mapper)
         {
-            _productRepository = productRepository;
+            _ProductService = IProductService;
             _mapper = mapper;
         }
         public async Task<bool> Handle(CreateProductCommand command, CancellationToken cancellationToken)
@@ -23,20 +24,20 @@ namespace practices.CQRS.Commands
                 await command.Image.CopyToAsync(stream);
             }
             var product = _mapper.MapToEntity(command, filePath);
-            await _productRepository.AddProductAsync(product);
+            await _ProductService.AddProductAsync(product);
             return true;
         }
     }
 
     public class UpdateProductHandler : IRequestHandler<UpdateProductCommand, bool>
     {
-        private readonly IProductRepository _productRepository;
+        private readonly IProductService _IProductService;
         private readonly ImageHelper _imageHelper;
         private readonly IMapper _mapper;
 
-        public UpdateProductHandler(IProductRepository productRepository, ImageHelper imageHelper, IMapper mapper)
+        public UpdateProductHandler(IProductService IProductService, ImageHelper imageHelper, IMapper mapper)
         {
-            _productRepository = productRepository;
+            _IProductService = IProductService;
             _imageHelper = imageHelper;
             _mapper = mapper;
         }
@@ -45,42 +46,42 @@ namespace practices.CQRS.Commands
         {
             var imagePath = command.Image != null ? await _imageHelper.SaveImageAsync(command.Image) : null;
             var product = _mapper.MapToEntity(command, imagePath);
-            await _productRepository.UpdateProductAsync(product);
+            await _IProductService.UpdateProductAsync(product);
             return true;
         }
     }
 
     public class DeleteProductHandler : IRequestHandler<DeleteProductCommand, bool>
     {
-        private readonly IProductRepository _productRepository;
+        private readonly IProductService _IProductService;
 
-        public DeleteProductHandler(IProductRepository productRepository)
+        public DeleteProductHandler(IProductService IProductService)
         {
-            _productRepository = productRepository;
+            _IProductService = IProductService;
         }
 
         public async Task<bool> Handle(DeleteProductCommand command, CancellationToken cancellationToken)
         {
-            await _productRepository.DeleteProductAsync(command.Id);
+            await _IProductService.DeleteProductAsync(command.Id);
             return true;
         }
     }
 
     public class SignInHandler : IRequestHandler<SignupUserDto, bool>, IRequestHandler<LoginUserDto, string>
     {
-        private readonly IUserRepository _userRepository;
+        private readonly IUserService _UserService;
 
         private readonly IConfiguration _configuration;
-        public SignInHandler(IUserRepository userRepository, IConfiguration configuration)
+        public SignInHandler(IUserService IUserService, IConfiguration configuration)
         {
-            _userRepository = userRepository;
+            _UserService = IUserService;
             _configuration = configuration;
 
         }
 
         public async Task<bool> Handle(SignupUserDto signupDto, CancellationToken cancellationToken)
         {
-            var existingUser = await _userRepository.GetUserByEmailAsync(signupDto.Email);
+            var existingUser = await _UserService.GetUserByEmailAsync(signupDto.Email);
             if (existingUser != null)
                 throw new Exception("User already exists.");
             var user = new User
@@ -90,13 +91,13 @@ namespace practices.CQRS.Commands
                 Password = signupDto.Password,
                 Role = signupDto.Role
             };
-            await _userRepository.AddUserAsync(user);
+            await _UserService.AddUserAsync(user);
             return true;
         }
 
         public async Task<string> Handle(LoginUserDto loginDto, CancellationToken cancellationToken)
         {
-            var user = await _userRepository.GetUserByEmailAsync(loginDto.Email);
+            var user = await _UserService.GetUserByEmailAsync(loginDto.Email);
             if (user == null)
             {
                 throw new Exception("Invalid login credentials.");
